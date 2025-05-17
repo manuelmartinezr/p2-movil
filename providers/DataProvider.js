@@ -1,7 +1,7 @@
 // llama a DataService para obtener/crear/editar/borrar datos
 // expone vía Context el estado
 // hace wrap a los componentes que consuman el contexto
-import { createContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { DataService } from '../services/DataService';
 
 export const DataContext = createContext({
@@ -36,6 +36,7 @@ export const DataProvider = ({ children }) => {
     const addEvent = async (event) => {
         try {
             const newEvent = await DataService.addEvent(event);
+            console.log('New event added:', newEvent);
             setEvents((prevEvents) => [...prevEvents, newEvent]);
         } catch (error) {
             console.error('Error adding event:', error);
@@ -77,3 +78,8 @@ export const DataProvider = ({ children }) => {
         </DataContext.Provider>
     );
 }
+export const useData = () => {
+  const ctx = useContext(DataContext);
+  if (!ctx) throw new Error('useData must be used within DataProvider');
+  return ctx;
+};

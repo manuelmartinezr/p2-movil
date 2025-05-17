@@ -1,5 +1,10 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
+import { DataProvider } from '../providers/DataProvider';
 
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <DataProvider>
+      <Stack />
+    </DataProvider>
+  );
 }
