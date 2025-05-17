@@ -13,8 +13,25 @@ async function handleResponse(res) {
 
 export const DataService = {
     async getEvents() {
+        const response = await fetch(`${BASE_URL}/data/events/all`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Contract-Key': CONTRACT_KEY,
+            },
+        });
+        return handleResponse(response);
     },
     async addEvent(event) {
+        const response = await fetch(`${BASE_URL}/data/events`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Contract-Key': CONTRACT_KEY,
+            },
+            body: JSON.stringify(event),
+        });
+        return handleResponse(response);
     },
     async addEventTrack(track){
     },

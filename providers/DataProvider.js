@@ -1,6 +1,8 @@
 // llama a DataService para obtener/crear/editar/borrar datos
 // expone vía Context el estado
 // hace wrap a los componentes que consuman el contexto
+import { createContext, useState } from 'react';
+import { DataService } from '../services/DataService';
 
 export const DataContext = createContext({
     events: [], // todos los eventos
@@ -9,6 +11,7 @@ export const DataContext = createContext({
     addEvent: () => {},
     addEventTrack: () => {},
     updateEvent: () => {},
+    getEvents: () => {},
     getEventTracks: () => {},
     getEventReviews: () => {},
     getEventParticipants: () => {},
@@ -18,8 +21,25 @@ export const DataProvider = ({ children }) => {
     const [tracks, setTracks] = useState([]);
     const [reviews, setReviews] = useState([]);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await DataService.getEvents();
+                setEvents(data);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        };
+        fetchData();
+    }, []);
+
     const addEvent = async (event) => {
-        // Lógica para agregar un evento
+        try {
+            const newEvent = await DataService.addEvent(event);
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
+        } catch (error) {
+            console.error('Error adding event:', error);
+        }
     };
 
     const addEventTrack = async (track) => {
@@ -28,6 +48,15 @@ export const DataProvider = ({ children }) => {
 
     const updateEvent = async (eventId, updates) => {
         // Lógica para actualizar un evento
+    };
+
+    const getEvents = async () => {
+        try {
+            const data = await DataService.getEvents();
+            setEvents(data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
     };
 
     const getEventTracks = async () => {
@@ -43,7 +72,7 @@ export const DataProvider = ({ children }) => {
     };
 
     return (
-        <DataContext.Provider value={{ events, tracks, reviews, addEvent, addEventTrack, updateEvent, getEventTracks, getEventReviews, getEventParticipants }}>
+        <DataContext.Provider value={{ events, tracks, reviews, addEvent, addEventTrack, updateEvent, getEvents, getEventTracks, getEventReviews, getEventParticipants }}>
             {children}
         </DataContext.Provider>
     );
