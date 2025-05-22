@@ -44,12 +44,28 @@ export const DataProvider = ({ children }) => {
     };
 
     const addEventTrack = async (track) => {
-        // Lógica para agregar una pista de evento
-    };
+        try {
+            const newTrack = await DataService.addEventTrack(track);
+            console.log('New event track added:', newTrack);
+            setTracks((prevTracks) => [...prevTracks, newTrack]); 
+        } catch (error) {
+            console.error('Error adding event track:', error);
+        }
+    };
 
     const updateEvent = async (eventId, updates) => {
-        // Lógica para actualizar un evento
-    };
+        try {
+            await DataService.updateEvent(eventId, updates);
+            console.log(`Event ${eventId} updated successfully.`);
+            setEvents((prevEvents) =>
+                prevEvents.map((event) =>
+                    event.id === eventId ? { ...event, ...updates } : event
+                )
+            );
+        } catch (error) {
+            console.error(`Error updating event ${eventId}:`, error);
+        }
+    };
 
     const getEvents = async () => {
         try {
