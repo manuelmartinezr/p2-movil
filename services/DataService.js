@@ -34,14 +34,87 @@ export const DataService = {
       const json = await handleResponse(res);
       console.log('DataService.addEvent', json);
     },
-    async addEventTrack(track){
-    },
-    async updateEvent(eventId, updates){
-    },
-    async getEventTracks(){
-    },
-    async getEventReviews(eventId){
-    },
-    async getEventParticipants(eventId){
-    },
+     async addEventTrack(track){ 
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            table_name : 'event_tracks', // Mirar si el nombre de la tabla es correcto
+            data: track 
+          }),
+        });
+        const json = await handleResponse(res);
+        console.log('DataService.addEventTrack', json);
+        return json;
+      } catch (error) {
+        console.error('Error adding event track:', error);
+        throw error;
+      }
+    },
+
+    async updateEvent(eventId, updates){
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/update/${eventId}`;
+      try {
+        const res = await fetch(url, {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            table_name: 'events', 
+            data: updates 
+          }),
+        });
+        const json = await handleResponse(res);
+        console.log('DataService.updateEvent', json);
+        return json;
+      } catch (error) {
+        console.error(`Error updating event ${eventId}:`, error);
+        throw error;
+      }
+    },
+
+    async getEventTracks(eventId){ 
+     
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/${eventId}?format=json`;
+      try {
+        const res = await fetch(url);
+        const json = await handleResponse(res);  
+        console.log(`DataService.getEventTracks for event ${eventId}`, json);
+        return json;
+      } catch (error) {
+        console.error(`Error fetching event tracks for event ${eventId}:`, error);
+        throw error;
+      }
+    },
+
+    async getEventReviews(eventId){ 
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_reviews/${eventId}?format=json`;
+      try {
+        const res = await fetch(url);
+        const json = await handleResponse(res);  
+        console.log(`DataService.getEventReviews for event ${eventId}`, json);
+        return json;
+      } catch (error) {
+        console.error(`Error fetching event reviews for event ${eventId}:`, error);
+        throw error;
+      }
+    },
+
+    async getEventParticipants(eventId){ 
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_participants/${eventId}?format=json`;
+      try {
+        const res = await fetch(url);
+        const json = await handleResponse(res);  
+        console.log(`DataService.getEventParticipants for event ${eventId}`, json);
+        return json;
+      } catch (error) {
+        console.error(`Error fetching event participants for event ${eventId}:`, error);
+        throw error;
+      }
+    },
 }
