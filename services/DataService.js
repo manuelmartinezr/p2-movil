@@ -1,7 +1,7 @@
 // habla con el API del webservice para obtener los datos
 
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'e83b7ac8-bdad-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'miau-bdad-4bb8-a532-6aaa5fddefa4';
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -16,9 +16,12 @@ export const DataService = {
       const url = `${BASE_URL}/${CONTRACT_KEY}/data/events/all?format=json`;
       const res = await fetch(url);
       const json = await handleResponse(res);  
-      console.log('DataService.getEvents', json);
+      const dataArray = json.data.map(e => e.data);
+      console.log('DataService.getEvents', dataArray);
+      return dataArray;
+      
     },
-    async addEvent() {
+    async addEvent(event) {
       const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
       const res = await fetch(url, {
         method: 'POST',
@@ -26,13 +29,13 @@ export const DataService = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // table_name : 'events',
-          // data: {
-          
+          table_name : 'events',
+          data: event
         }),
       });
       const json = await handleResponse(res);
-      console.log('DataService.addEvent', json);
+      console.log('DataService.addEvent', json.entry.data);
+      return json.entry.data;
     },
     async addEventTrack(track){
     },
