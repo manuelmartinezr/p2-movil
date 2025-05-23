@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import React, { memo, useCallback } from 'react';
 import {
   Alert,
   Button,
   FlatList,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
   StyleSheet,
   Switch,
   Text,
@@ -12,25 +15,23 @@ import {
 } from 'react-native';
 import { useData } from '../providers/DataProvider';
 
-export default function EventsScreen() {
-  const { events, addEvent } = useData();
-
-  // form state
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [date, setDate] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState('');
-  const [description, setDescription] = useState('');
-  const [isFinished, setIsFinished] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
-  const [eventTrackId, setEventTrackId] = useState('');
+// 1️⃣ The form is its own memoized component, with internal state:
+const EventForm = memo(function EventForm({ onAdd }) {
+  const [name, setName] = React.useState('');
+  const [location, setLocation] = React.useState('');
+  const [date, setDate] = React.useState('');
+  const [maxParticipants, setMaxParticipants] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [isFinished, setIsFinished] = React.useState(false);
+  const [imageUrl, setImageUrl] = React.useState('');
+  const [eventTrackId, setEventTrackId] = React.useState('');
 
   const handleAdd = () => {
     if (!name.trim() || !location.trim() || !date.trim() || !maxParticipants.trim()) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
-    addEvent({
+    onAdd({
       id: Math.floor(Math.random() * 1e6),
       name: name.trim(),
       location: location.trim(),
@@ -48,36 +49,34 @@ export default function EventsScreen() {
     setIsFinished(false); setImageUrl(''); setEventTrackId('');
   };
 
-  const renderForm = () => (
+  return (
     <View style={styles.formContainer}>
       <Text style={styles.title}>Create New Event</Text>
-      {[
-        { value: name,    setter: setName, placeholder: 'Name*' },
-        { value: location, setter: setLocation, placeholder: 'Location*' },
-        { value: date,    setter: setDate, placeholder: 'Date* (YYYY-MM-DD)' },
-        { value: maxParticipants, setter: setMaxParticipants, placeholder: 'Max Participants*', keyboardType: 'number-pad' },
-        { value: description, setter: setDescription, placeholder: 'Description', multiline: true },
-        { value: imageUrl, setter: setImageUrl, placeholder: 'Image URL' },
-        { value: eventTrackId, setter: setEventTrackId, placeholder: 'Track ID', keyboardType: 'number-pad' },
-      ].map((fld, i) => (
-        <TextInput
-          key={i}
-          style={styles.input}
-          placeholder={fld.placeholder}
-          value={fld.value}
-          onChangeText={fld.setter}
-          multiline={fld.multiline}
-          keyboardType={fld.keyboardType}
-        />
-      ))}
+      <TextInput style={styles.input} placeholder="Name*"       value={name}           onChangeText={setName} />
+      <TextInput style={styles.input} placeholder="Location*"   value={location}       onChangeText={setLocation} />
+      <TextInput style={styles.input} placeholder="Date* (YYYY-MM-DD)" value={date}   onChangeText={setDate} />
+      <TextInput style={styles.input} placeholder="Max Participants*" value={maxParticipants} onChangeText={setMaxParticipants} keyboardType="number-pad" />
+      <TextInput style={[styles.input, { height: 80 }]} placeholder="Description" value={description} onChangeText={setDescription} multiline />
       <View style={styles.switchRow}>
         <Text>Finished?</Text>
         <Switch value={isFinished} onValueChange={setIsFinished} />
       </View>
+      <TextInput style={styles.input} placeholder="Image URL" value={imageUrl} onChangeText={setImageUrl} />
+      <TextInput style={styles.input} placeholder="Track ID" value={eventTrackId} onChangeText={setEventTrackId} keyboardType="number-pad" />
       <Button title="Add Event" onPress={handleAdd} />
       <View style={styles.separator} />
       <Text style={[styles.title, { marginTop: 0 }]}>All Events</Text>
     </View>
+  );
+});
+
+export default function EventsScreen() {
+  const { events, addEvent } = useData();
+
+  // 2️⃣ Memoize the header so it's the *same* component reference every render:
+  const HeaderComponent = useCallback(
+    () => <EventForm onAdd={addEvent} />,
+    [addEvent]
   );
 
   const renderItem = ({ item }) => (
@@ -96,32 +95,41 @@ export default function EventsScreen() {
   );
 
   return (
-    <FlatList
-      data={events}
-      keyExtractor={ev => String(ev.id)}
-      renderItem={renderItem}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
-      ListHeaderComponent={renderForm}
-      contentContainerStyle={styles.container}
-      // optional if you want pull-to-refresh, etc.
-    />
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <FlatList
+          data={events}
+          keyExtractor={ev => String(ev.id)}
+          renderItem={renderItem}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListHeaderComponent={HeaderComponent}
+          contentContainerStyle={styles.listContainer}
+          keyboardShouldPersistTaps="handled"
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#fff' },
-  formContainer: { marginBottom: 20 },
+  safe: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1 },
+  formContainer: { padding: 20, backgroundColor: '#fff' },
+  listContainer: { paddingBottom: 40, backgroundColor: '#fff' },
   title: { fontSize: 22, marginBottom: 12, textAlign: 'center' },
   input: {
     borderWidth: 1, borderColor: '#ccc',
     padding: 8, marginBottom: 12, borderRadius: 4,
   },
   switchRow: {
-    flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', marginBottom: 12,
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 12,
   },
   separator: { height: 1, backgroundColor: '#eee', marginVertical: 12 },
-  item: { flexDirection: 'row', alignItems: 'flex-start' },
+  item: { flexDirection: 'row', alignItems: 'flex-start', padding: 20 },
   thumbnail: { width: 60, height: 60, borderRadius: 4, marginRight: 12 },
   info: { flex: 1 },
   itemTitle: { fontWeight: 'bold', fontSize: 16 },
