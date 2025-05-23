@@ -1,51 +1,129 @@
 import { useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  Button,
+  FlatList,
+  Image,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useData } from '../providers/DataProvider';
 
 export default function EventsScreen() {
   const { events, addEvent } = useData();
-  const [newName, setNewName] = useState('');
+
+  // form state
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState('');
+  const [date, setDate] = useState('');
+  const [maxParticipants, setMaxParticipants] = useState('');
+  const [description, setDescription] = useState('');
+  const [isFinished, setIsFinished] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [eventTrackId, setEventTrackId] = useState('');
 
   const handleAdd = () => {
-    if (!newName.trim()) return;
-    addEvent({ 
-      id: Math.random().toString(36).substring(7), // Genera un ID aleatorio
-      name: newName,
+    if (!name.trim() || !location.trim() || !date.trim() || !maxParticipants.trim()) {
+      Alert.alert('Error', 'Please fill in all required fields.');
+      return;
+    }
+    addEvent({
+      id: Math.floor(Math.random() * 1e6),
+      name: name.trim(),
+      location: location.trim(),
+      date: date.trim(),
+      maxParticipants: parseInt(maxParticipants, 10),
+      description: description.trim() || undefined,
+      currentParticipants: 0,
+      isFinished,
+      image: imageUrl.trim() || undefined,
+      eventTrackId: eventTrackId.trim() ? parseInt(eventTrackId, 10) : undefined,
     });
-    setNewName('');
+    // reset
+    setName(''); setLocation(''); setDate('');
+    setMaxParticipants(''); setDescription('');
+    setIsFinished(false); setImageUrl(''); setEventTrackId('');
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Eventos</Text>
-      <FlatList
-        data={events}
-        keyExtractor={ev => String(ev.id)}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text>{item.name}</Text>
-          </View>
-        )}
-      />
-      <View style={styles.form}>
+  const renderForm = () => (
+    <View style={styles.formContainer}>
+      <Text style={styles.title}>Create New Event</Text>
+      {[
+        { value: name,    setter: setName, placeholder: 'Name*' },
+        { value: location, setter: setLocation, placeholder: 'Location*' },
+        { value: date,    setter: setDate, placeholder: 'Date* (YYYY-MM-DD)' },
+        { value: maxParticipants, setter: setMaxParticipants, placeholder: 'Max Participants*', keyboardType: 'number-pad' },
+        { value: description, setter: setDescription, placeholder: 'Description', multiline: true },
+        { value: imageUrl, setter: setImageUrl, placeholder: 'Image URL' },
+        { value: eventTrackId, setter: setEventTrackId, placeholder: 'Track ID', keyboardType: 'number-pad' },
+      ].map((fld, i) => (
         <TextInput
-          placeholder="Nuevo evento"
-          value={newName}
-          onChangeText={setNewName}
+          key={i}
           style={styles.input}
+          placeholder={fld.placeholder}
+          value={fld.value}
+          onChangeText={fld.setter}
+          multiline={fld.multiline}
+          keyboardType={fld.keyboardType}
         />
-        <Button title="Agregar" onPress={handleAdd} />
+      ))}
+      <View style={styles.switchRow}>
+        <Text>Finished?</Text>
+        <Switch value={isFinished} onValueChange={setIsFinished} />
+      </View>
+      <Button title="Add Event" onPress={handleAdd} />
+      <View style={styles.separator} />
+      <Text style={[styles.title, { marginTop: 0 }]}>All Events</Text>
+    </View>
+  );
+
+  const renderItem = ({ item }) => (
+    <View style={styles.item}>
+      {item.image && <Image source={{ uri: item.image }} style={styles.thumbnail} />}
+      <View style={styles.info}>
+        <Text style={styles.itemTitle}>{item.name}</Text>
+        <Text>{item.location} — {item.date}</Text>
+        <Text>
+          {item.currentParticipants}/{item.maxParticipants} participants
+        </Text>
+        {item.description ? <Text style={styles.desc}>{item.description}</Text> : null}
+        <Text>Status: {item.isFinished ? 'Finished' : 'Ongoing'}</Text>
       </View>
     </View>
+  );
+
+  return (
+    <FlatList
+      data={events}
+      keyExtractor={ev => String(ev.id)}
+      renderItem={renderItem}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ListHeaderComponent={renderForm}
+      contentContainerStyle={styles.container}
+      // optional if you want pull-to-refresh, etc.
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 40 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, marginBottom: 16, textAlign: 'center' },
-  item: { padding: 12, borderBottomWidth: 1, borderColor: '#eee' },
-  form: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
-  input: { flex: 1, borderWidth: 1, borderColor: '#ccc', padding: 8, marginRight: 8, borderRadius: 4 },
-  error: { color: 'red', textAlign: 'center', marginTop: 20 },
+  container: { padding: 20, backgroundColor: '#fff' },
+  formContainer: { marginBottom: 20 },
+  title: { fontSize: 22, marginBottom: 12, textAlign: 'center' },
+  input: {
+    borderWidth: 1, borderColor: '#ccc',
+    padding: 8, marginBottom: 12, borderRadius: 4,
+  },
+  switchRow: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', marginBottom: 12,
+  },
+  separator: { height: 1, backgroundColor: '#eee', marginVertical: 12 },
+  item: { flexDirection: 'row', alignItems: 'flex-start' },
+  thumbnail: { width: 60, height: 60, borderRadius: 4, marginRight: 12 },
+  info: { flex: 1 },
+  itemTitle: { fontWeight: 'bold', fontSize: 16 },
+  desc: { fontStyle: 'italic', marginTop: 4 },
 });
