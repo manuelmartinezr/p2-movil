@@ -24,8 +24,10 @@ export const DataProvider = ({ children }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await DataService.getEvents();
-                setEvents(data);
+                const event_data = await DataService.getEvents();
+                setEvents(event_data);
+                const track_data = await DataService.getEventTracks();
+                setTracks(track_data);
             } catch (error) {
                 console.error('Error fetching events:', error);
             }
@@ -45,6 +47,13 @@ export const DataProvider = ({ children }) => {
 
     const addEventTrack = async (track) => {
         // Lógica para agregar una pista de evento
+        try {
+            const newTrack = await DataService.addEventTrack(track);
+            console.log('New track added:', newTrack);
+            setTracks((prevTracks) => [...prevTracks, newTrack]);
+        } catch (error) {
+            console.error('Error adding event track:', error);
+        }
     };
 
     const updateEvent = async (eventId, updates) => {
@@ -62,6 +71,12 @@ export const DataProvider = ({ children }) => {
 
     const getEventTracks = async () => {
         // Lógica para obtener las pistas de eventos
+        try {
+            const data = await DataService.getEventTracks();
+            setTracks(data);
+        } catch (error) {
+            console.error('Error fetching event tracks:', error);
+        }
     };
 
     const getEventReviews = async (eventId) => {

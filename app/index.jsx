@@ -8,75 +8,50 @@ import {
   Platform,
   SafeAreaView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 import { useData } from '../providers/DataProvider';
 
 // 1️⃣ The form is its own memoized component, with internal state:
 const EventForm = memo(function EventForm({ onAdd }) {
   const [name, setName] = React.useState('');
-  const [location, setLocation] = React.useState('');
-  const [date, setDate] = React.useState('');
-  const [maxParticipants, setMaxParticipants] = React.useState('');
-  const [description, setDescription] = React.useState('');
-  const [isFinished, setIsFinished] = React.useState(false);
-  const [imageUrl, setImageUrl] = React.useState('');
-  const [eventTrackId, setEventTrackId] = React.useState('');
 
+  const [imageUrl, setImageUrl] = React.useState('');
   const handleAdd = () => {
-    if (!name.trim() || !location.trim() || !date.trim() || !maxParticipants.trim()) {
+    if (!name.trim()) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
     onAdd({
       id: Math.floor(Math.random() * 1e6),
       name: name.trim(),
-      location: location.trim(),
-      date: date.trim(),
-      maxParticipants: parseInt(maxParticipants, 10),
-      description: description.trim() || undefined,
-      currentParticipants: 0,
-      isFinished,
       image: imageUrl.trim() || undefined,
-      eventTrackId: eventTrackId.trim() ? parseInt(eventTrackId, 10) : undefined,
     });
     // reset
-    setName(''); setLocation(''); setDate('');
-    setMaxParticipants(''); setDescription('');
-    setIsFinished(false); setImageUrl(''); setEventTrackId('');
+    setName(''); setImageUrl('');
   };
 
   return (
     <View style={styles.formContainer}>
       <Text style={styles.title}>Create New Event</Text>
       <TextInput style={styles.input} placeholder="Name*"       value={name}           onChangeText={setName} />
-      <TextInput style={styles.input} placeholder="Location*"   value={location}       onChangeText={setLocation} />
-      <TextInput style={styles.input} placeholder="Date* (YYYY-MM-DD)" value={date}   onChangeText={setDate} />
-      <TextInput style={styles.input} placeholder="Max Participants*" value={maxParticipants} onChangeText={setMaxParticipants} keyboardType="number-pad" />
-      <TextInput style={[styles.input, { height: 80 }]} placeholder="Description" value={description} onChangeText={setDescription} multiline />
-      <View style={styles.switchRow}>
-        <Text>Finished?</Text>
-        <Switch value={isFinished} onValueChange={setIsFinished} />
-      </View>
       <TextInput style={styles.input} placeholder="Image URL" value={imageUrl} onChangeText={setImageUrl} />
-      <TextInput style={styles.input} placeholder="Track ID" value={eventTrackId} onChangeText={setEventTrackId} keyboardType="number-pad" />
-      <Button title="Add Event" onPress={handleAdd} />
+      <Button title="Add Event Track" onPress={handleAdd} />
       <View style={styles.separator} />
-      <Text style={[styles.title, { marginTop: 0 }]}>All Events</Text>
+      <Text style={[styles.title, { marginTop: 0 }]}>All Event Tracks</Text>
     </View>
   );
 });
 
-export default function EventsScreen() {
-  const { events, addEvent } = useData();
+export default function EventTrackScreen() {
+  const { tracks, addEventTrack } = useData();
 
   // 2️⃣ Memoize the header so it's the *same* component reference every render:
   const HeaderComponent = useCallback(
-    () => <EventForm onAdd={addEvent} />,
-    [addEvent]
+    () => <EventForm onAdd={addEventTrack} />,
+    [addEventTrack]
   );
 
   const renderItem = ({ item }) => (
@@ -101,7 +76,7 @@ export default function EventsScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <FlatList
-          data={events}
+          data={tracks}
           keyExtractor={ev => String(ev.id)}
           renderItem={renderItem}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
