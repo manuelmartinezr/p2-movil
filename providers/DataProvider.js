@@ -54,7 +54,15 @@ export const DataProvider = ({ children }) => {
     };
     const updateEvent = async (eventId, updates) => {
         // Lógica para actualizar un evento
-        
+        try {
+            const updatedEvent = await DataService.updateEvent(eventId, updates);
+            console.log('Event updated:', updatedEvent);
+            setEvents((prevEvents) =>
+                prevEvents.map((event) => (event.id === eventId ? updatedEvent : event))
+            );
+        } catch (error) {
+            console.error('Error updating event:', error);
+        }
     };
     const getEventTracks = async () => {
         // Lógica para obtener las pistas de eventos
