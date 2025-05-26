@@ -35,6 +35,14 @@ export const DataProvider = ({ children }) => {
         fetchData();
     }, []);
 
+    const getEvents = async () => {
+        try {
+            const data = await DataService.getEvents();
+            setEvents(data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
+    };
     const addEvent = async (event) => {
         try {
             const newEvent = await DataService.addEvent(event);
@@ -44,7 +52,19 @@ export const DataProvider = ({ children }) => {
             console.error('Error adding event:', error);
         }
     };
-
+    const updateEvent = async (eventId, updates) => {
+        // Lógica para actualizar un evento
+        
+    };
+    const getEventTracks = async () => {
+        // Lógica para obtener las pistas de eventos
+        try {
+            const data = await DataService.getEventTracks();
+            setTracks(data);
+        } catch (error) {
+            console.error('Error fetching event tracks:', error);
+        }
+    };
     const addEventTrack = async (track) => {
         // Lógica para agregar una pista de evento
         try {
@@ -55,34 +75,9 @@ export const DataProvider = ({ children }) => {
             console.error('Error adding event track:', error);
         }
     };
-
-    const updateEvent = async (eventId, updates) => {
-        // Lógica para actualizar un evento
-    };
-
-    const getEvents = async () => {
-        try {
-            const data = await DataService.getEvents();
-            setEvents(data);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        }
-    };
-
-    const getEventTracks = async () => {
-        // Lógica para obtener las pistas de eventos
-        try {
-            const data = await DataService.getEventTracks();
-            setTracks(data);
-        } catch (error) {
-            console.error('Error fetching event tracks:', error);
-        }
-    };
-
     const getEventReviews = async (eventId) => {
         // Lógica para obtener las reseñas de un evento
     };
-
     const getEventParticipants = async (eventId) => {
         // Lógica para obtener los participantes de un evento
     };
