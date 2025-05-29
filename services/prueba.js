@@ -1,5 +1,5 @@
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'kljh-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'jga-a532-6aaa5fddefa4';
 import { DataService } from './DataService.js';
 
 (async () => {
@@ -9,18 +9,29 @@ import { DataService } from './DataService.js';
     console.log('getEvents →', events);
 
     // 2. Fetch all event tracks
-    const tracks = await DataService.getEventTracks();
-    console.log('getEventTracks →', tracks);
+    // const tracks = await DataService.getEventTracks();
+    // console.log('getEventTracks →', tracks);
 
     // 3. Create a new event
-    // const newEventPayload = { id: 1, name: '🚀 Test Event', date: '2025-06-01' };
+    // const newEventPayload = { id: 1, name: '🚀 Test Event', date: '2025-06-01', currentParticipants:0  };
     // const created = await DataService.addEvent(newEventPayload);
     // console.log('addEvent →', created);
     // console.log('Created Event ID →', created.id);
 
+    // const reviews = [
+    //   { id: 1, event_id: created.id, rating: 5, comment: 'Amazing event!' },
+    //   { id: 2, event_id: created.id, rating: 4, comment: 'Great experience!' }
+    // ]
+    // console.log('Adding reviews:', reviews);
+    // for (const review of reviews) {
+    //   const addedReview = await DataService.addEventReview(review);
+    //   console.log('addEventReview →', addedReview);
+    // }
+    
+
     // 4. Update that same event
-    const updated = await DataService.updateEvent(1748297163886, { name: '🔄 Updated Test Event' });
-    console.log('updateEvent →', updated);
+    // const updated = await DataService.updateEvent(1748297163886, { name: '🔄 Updated Test Event' });
+    // console.log('updateEvent →', updated);
 
     // // 5. Create a new track for that event
     // const newTrackPayload = { event_id: created.id, name: 'Main Stage' };
@@ -31,6 +42,13 @@ import { DataService } from './DataService.js';
     //    so they’ll return `undefined` unless you add them:
     // console.log('getEventReviews →', await DataService.getEventReviews?.(created.id));
     // console.log('getEventParticipants →', await DataService.getEventParticipants?.(created.id));
+
+    // const fetchedReviews = await DataService.getEventReviews(created.id);
+    // console.log('getEventReviews →', fetchedReviews);
+
+    const currentParticipants = await DataService.getEventParticipants('1748535483933');
+    console.log('getEventParticipants →', currentParticipants);
+
   }
   catch (err) {
     console.error('❌ Error:', err);

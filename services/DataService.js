@@ -1,7 +1,7 @@
 // habla con el API del webservice para obtener los datos
 
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'faaf-bdad-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'fafahg-bdad-4bb8-a532-6aaa5fddefa4';
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -40,12 +40,19 @@ export const DataService = {
     async addEvent(event) {
       const created = await this.addEventHelper(event);
     
-      const newEvent = await this.updateEvent(created.entry_id, { id: created.entry_id });
+      // const patchResult = await this.updateEvent(created.entry_id, { id: created.entry_id });
+      console.log('DataService.addEventHelper', created);
+      const patch = {
+        ...created.data,
+        id: created.entry_id // Asegúrate de que el ID sea el entry_id
+      };
+      console.log('DataService.addEvent patch', patch);
+      const newEvent = await this.updateEvent(created.entry_id, patch);
       console.log('DataService.addEvent', newEvent);
       return newEvent;
     },
     async updateEvent(eventId, updates){
-      const url = `${BASE_URL}/${CONTRACT_KEY}/data/events/update/${eventId}`; // wrong endpont?
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/events/update/${eventId}`;
       const res = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -86,7 +93,34 @@ export const DataService = {
       return json.entry.data;
     },
     async getEventReviews(eventId){
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_reviews/all?format=json&event_id=${eventId}`;
+      const res = await fetch(url);
+      const json = await handleResponse(res);  
+      const dataArray = json.data.map(e => e.data);
+      console.log('DataService.getEventReviews', dataArray);
+      return dataArray;
     },
     async getEventParticipants(eventId){
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/events/all?format=json&id=${eventId}`;
+      const res = await fetch(url);
+      const json = await handleResponse(res);  
+      const event_participants = json.data[0].data.currentParticipants;
+      return event_participants;
     },
+    // async addEventReview(review) {
+    //   const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
+    //   const res = await fetch(url, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       table_name : 'event_reviews',
+    //       data: review
+    //     }),
+    //   });
+    //   const json = await handleResponse(res);
+    //   console.log('DataService.addEventReview', json.entry.data);
+    //   return json.entry.data;
+    // }
 }
