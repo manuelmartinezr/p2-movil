@@ -1,7 +1,7 @@
 // habla con el API del webservice para obtener los datos
 
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'fafahg-bdad-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'miau-4bb8-a532-6aaa5fddefa4';
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -44,7 +44,7 @@ export const DataService = {
       console.log('DataService.addEventHelper', created);
       const patch = {
         ...created.data,
-        id: created.entry_id // Asegúrate de que el ID sea el entry_id
+        id: parseInt(created.entry_id) // Asegúrate de que el ID sea el entry_id
       };
       console.log('DataService.addEvent patch', patch);
       const newEvent = await this.updateEvent(created.entry_id, patch);
@@ -107,20 +107,20 @@ export const DataService = {
       const event_participants = json.data[0].data.currentParticipants;
       return event_participants;
     },
-    // async addEventReview(review) {
-    //   const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
-    //   const res = await fetch(url, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       table_name : 'event_reviews',
-    //       data: review
-    //     }),
-    //   });
-    //   const json = await handleResponse(res);
-    //   console.log('DataService.addEventReview', json.entry.data);
-    //   return json.entry.data;
-    // }
+    async addEventReview(review) {
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          table_name : 'event_reviews',
+          data: review
+        }),
+      });
+      const json = await handleResponse(res);
+      console.log('DataService.addEventReview', json.entry.data);
+      return json.entry.data;
+    }
 }

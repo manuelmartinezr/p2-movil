@@ -36,6 +36,15 @@ export const DataProvider = ({ children }) => {
     }, []);
 
     const getEvents = async () => {
+        // devuelve un array de eventos
+        // getEvents → [
+        //   {
+        //     id: 1748565262911,
+        //     name: '🚀 Test Event',
+        //     date: '2025-06-01',
+        //     currentParticipants: 0
+        //   }
+        // ]
         try {
             const data = await DataService.getEvents();
             setEvents(data);
@@ -44,6 +53,9 @@ export const DataProvider = ({ children }) => {
         }
     };
     const addEvent = async (event) => {
+        // espera un json de forma { id: 1, name: '🚀 Test Event', date: '2025-06-01', currentParticipants:0 ... etc.
+        // devuelve el evento agregado
+        // addEvent → { id: 1748565262911, name: '🚀 Test Event', date: '2025-06-01', currentParticipants: 0 ... etc. }
         try {
             const newEvent = await DataService.addEvent(event);
             console.log('New event added:', newEvent);
@@ -53,7 +65,11 @@ export const DataProvider = ({ children }) => {
         }
     };
     const updateEvent = async (eventId, updates) => {
-        // Lógica para actualizar un evento
+        // busca un evento por id y lo reemplaza con los datos de updates
+        // esencialmente, reemplaza un evento por otro
+        // es necesario que updates contenga los datos completos del evento, no solo los campos a actualizar
+        // devuelve el evento actualizado
+        // updateEvent → { id: 1748565262911, name: '🔄 Updated Test Event', date: '2025-06-01', currentParticipants: 0 ... etc. }
         try {
             const updatedEvent = await DataService.updateEvent(eventId, updates);
             console.log('Event updated:', updatedEvent);
@@ -66,6 +82,12 @@ export const DataProvider = ({ children }) => {
     };
     const getEventTracks = async () => {
         // Lógica para obtener las pistas de eventos
+        // devuelve un array de pistas de eventos
+        // DataService.getEventTracks [
+        //   { id: 1, name: 'Ciberseguridad' },
+        //   { id: 2, name: 'Bases de datos' }
+        // ]
+
         try {
             const data = await DataService.getEventTracks();
             setTracks(data);
@@ -75,6 +97,9 @@ export const DataProvider = ({ children }) => {
     };
     const addEventTrack = async (track) => {
         // Lógica para agregar una pista de evento
+        // espera un json de forma { id: 1, name: 'Ciberseguridad' }
+        // devuelve el track agregado
+        // addEventTrack → { id: 1, name: 'Ciberseguridad' }
         try {
             const newTrack = await DataService.addEventTrack(track);
             console.log('New track added:', newTrack);
@@ -84,10 +109,42 @@ export const DataProvider = ({ children }) => {
         }
     };
     const getEventReviews = async (eventId) => {
-        // Lógica para obtener las reseñas de un evento
+        // devuelve un array de reseñas de un evento específico
+        //
+        // getEventReviews → [
+        //   {
+        //     id: 1,
+        //     event_id: '1748565262911',
+        //     rating: 5,
+        //     comment: 'Amazing event!'
+        //   },
+        //   {
+        //     id: 2,
+        //     event_id: '1748565262911',
+        //     rating: 4,
+        //     comment: 'Great experience!'
+        //   }
+        // ]
+        try {
+            const data = await DataService.getEventReviews(eventId);
+            setReviews(data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching event reviews:', error);
+            return [];
+        }
     };
     const getEventParticipants = async (eventId) => {
         // Lógica para obtener los participantes de un evento
+        // espera un id de evento y devuelve un entero (currentParticipants)
+        // getEventParticipants → 10
+        try {
+            const data = await DataService.getEventParticipants(eventId);
+            return data;
+        } catch (error) {
+            console.error('Error fetching event participants:', error);
+            return;
+        }
     };
 
     return (
