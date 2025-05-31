@@ -146,6 +146,22 @@ export const DataProvider = ({ children }) => {
             return;
         }
     };
+    const deleteEvent = async (eventId) => {
+        // Lógica para eliminar un evento
+        // espera un id de evento y elimina el evento
+        // devuelve true si se eliminó correctamente, false si no
+        try {
+            const response = await DataService.deleteEvent(eventId);
+            if (response.success) {
+                setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            return false;
+        }
+    };
 
     return (
         <DataContext.Provider value={{ events, tracks, reviews, addEvent, addEventTrack, updateEvent, getEvents, getEventTracks, getEventReviews, getEventParticipants }}>

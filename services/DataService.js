@@ -1,7 +1,7 @@
 // habla con el API del webservice para obtener los datos
 
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'miau-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'woooof-4bb8-a532-6aaa5fddefa4';
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -122,5 +122,19 @@ export const DataService = {
       const json = await handleResponse(res);
       console.log('DataService.addEventReview', json.entry.data);
       return json.entry.data;
+    },
+    async deleteEvent(eventId) {
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/events/delete/${eventId}`;
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to delete event with ID ${eventId}`);
+      }
+      console.log(`Event with ID ${eventId} deleted successfully`);
+      return { success: true };
     }
 }
