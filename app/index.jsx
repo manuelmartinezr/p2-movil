@@ -15,7 +15,7 @@ export default function HomeScreen() {
         <Text style={styles.buttonText}>Manage Events</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/dashboard.jsx')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/dashboard')}>
         <Text style={styles.buttonText}>View Stats</Text>
       </TouchableOpacity>
     </View>
