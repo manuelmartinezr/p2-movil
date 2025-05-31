@@ -7,15 +7,15 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
       <Text style={styles.title}>Conference Manager</Text>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/Tracks')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/tracks')}>
         <Text style={styles.buttonText}>Manage Tracks</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/Events')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/events')}>
         <Text style={styles.buttonText}>Manage Events</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/Dashboard')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/dashboard.jsx')}>
         <Text style={styles.buttonText}>View Stats</Text>
       </TouchableOpacity>
     </View>
