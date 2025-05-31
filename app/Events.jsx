@@ -48,7 +48,7 @@ export default function EventsScreen() {
         keyExtractor={(item) => item.id?.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => router.push({ pathname: '/event-detail', params: item })}
+            onPress={() => router.push({ pathname: '/Event-detail', params: item })}
             style={styles.card}
           >
             <Text style={styles.cardText}>{item.name}</Text>
