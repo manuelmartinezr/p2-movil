@@ -138,6 +138,13 @@ export const DataService = {
       const event_participants = json.data[0].data.currentParticipants;
       return event_participants;
     },
+    async getEventMaxParticipants(eventId){
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/events/all?format=json&id=${eventId}`;
+      const res = await fetch(url);
+      const json = await handleResponse(res);  
+      const max_participants = json.data[0].data.maxParticipants;
+      return max_participants;
+    },
     async addEventReview(review) {
       const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
       const res = await fetch(url, {

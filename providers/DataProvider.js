@@ -195,6 +195,17 @@ export const DataProvider = ({ children }) => {
       return 0;
     }
   };
+  const getEventMaxParticipants = async (eventId) => {
+    // Lógica para obtener el número máximo de participantes de un evento
+    // espera un id de evento y devuelve un entero (maxParticipants)
+    // getEventMaxParticipants → 100
+    try {
+      return await DataService.getEventMaxParticipants(eventId);
+    } catch (error) {
+      console.error('Error fetching event max participants:', error);
+      return 0;
+    }
+  }
 
   return (
     <DataContext.Provider
