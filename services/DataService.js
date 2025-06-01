@@ -136,5 +136,21 @@ export const DataService = {
       }
       console.log(`Event with ID ${eventId} deleted successfully`);
       return { success: true };
-    }
+    },
+    async deleteEventTrack(trackId) {
+  const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/delete/${trackId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete event track with ID ${trackId}`);
+  }
+  console.log(`Track with ID ${trackId} deleted successfully`);
+  return { success: true };
+}
+
+    
 }
