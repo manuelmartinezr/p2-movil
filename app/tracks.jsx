@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -16,7 +16,7 @@ export default function TracksScreen() {
     tracks,
     events,
     addEventTrack,
-    updateEvent,
+    updateEventTrack,
     deleteEventTrack,
     getEventTracks,
   } = useData();
@@ -44,7 +44,7 @@ export default function TracksScreen() {
     }
 
     if (editingId) {
-      await updateEvent(editingId, { id: editingId, name, description });
+      await updateEventTrack(editingId, { id: editingId, name, description });
       Alert.alert('Track updated!');
     } else {
       const newTrack = {

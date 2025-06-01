@@ -1,7 +1,7 @@
 // habla con el API del webservice para obtener los datos
 
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'woooof-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'kdkja-4bb8-a532-6aaa5fddefa4';
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -68,6 +68,23 @@ export const DataService = {
       console.log('DataService.updateEvent', json.entry.data);
       return json.entry.data;
     },
+    async updateEventTrack(trackId, updates){
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/update/${trackId}`;
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          table_name : 'event_tracks',
+          data: updates,
+          where: { id: trackId }
+        }),
+      });
+      const json = await handleResponse(res);
+      console.log('DataService.updateEventTrack', json.entry.data);
+      return json.entry.data;
+    },
     async getEventTracks(){
       const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/all?format=json`;
       const res = await fetch(url);
@@ -76,7 +93,7 @@ export const DataService = {
       console.log('DataService.getEventTracks', dataArray);
       return dataArray;
     },
-    async addEventTrack(track){
+    async addEventTrackHelper(track) {
       const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
       const res = await fetch(url, {
         method: 'POST',
@@ -89,8 +106,22 @@ export const DataService = {
         }),
       });
       const json = await handleResponse(res);
-      console.log('DataService.addEventTrack', json.entry.data);
-      return json.entry.data;
+      console.log('DataService.addEventTrackHelper', json.entry);
+      return json.entry;
+    },
+    async addEventTrack(track){
+      const created = await this.addEventTrackHelper(track);
+
+      console.log('DataService.addEventTrackHelper', created);
+
+      const patch = {
+        ...created.data,
+        id: parseInt(created.entry_id) // Asegúrate de que el ID sea el entry_id
+      };
+      console.log('DataService.addEventTrack patch', patch);
+      const newTrack = await this.updateEventTrack(created.entry_id, patch);
+      console.log('DataService.addEventTrack', newTrack);
+      return newTrack;
     },
     async getEventReviews(eventId){
       const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_reviews/all?format=json&event_id=${eventId}`;
@@ -137,20 +168,19 @@ export const DataService = {
       console.log(`Event with ID ${eventId} deleted successfully`);
       return { success: true };
     },
-    async deleteEventTrack(trackId) {
-  const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/delete/${trackId}`;
-  const res = await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to delete event track with ID ${trackId}`);
+  async deleteEventTrack(trackId) {
+    const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/delete/${trackId}`;
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to delete event track with ID ${trackId}`);
+    }
+    console.log(`Track with ID ${trackId} deleted successfully`);
+    console.log('response', res.body); 
+    return { success: true };
   }
-  console.log(`Track with ID ${trackId} deleted successfully`);
-  return { success: true };
-}
-
-    
 }

@@ -5,12 +5,18 @@ import { DataService } from './DataService.js';
 (async () => {
   try {
     // 1. Fetch all events
-    // const events = await DataService.getEvents();
-    // console.log('getEvents →', events);
+    const events = await DataService.getEvents();
+    console.log('getEvents →', events);
 
     // 2. Fetch all event tracks
-    // const tracks = await DataService.getEventTracks();
-    // console.log('getEventTracks →', tracks);
+    const tracks = await DataService.getEventTracks();
+    console.log('getEventTracks →', tracks);
+
+    // for (const track of tracks) {
+    //   console.log(`Track ID: ${track.id}, Name: ${track.name}`);
+    //   await DataService.deleteEventTrack(track.id);
+    //   console.log(`Deleted Track ID: ${track.id}`);
+    // }
 
     // 3. Create a new event
     // const newEventPayload = { 
@@ -45,8 +51,8 @@ import { DataService } from './DataService.js';
     // const createdTrack = await DataService.addEventTrack(newTrackPayload);
     // console.log('addEventTrack →', createdTrack);
 
-    const fetchedReviews = await DataService.getEventReviews(1748636571038);
-    console.log('getEventReviews →', fetchedReviews);
+    // const fetchedReviews = await DataService.getEventReviews(1748636571038);
+    // console.log('getEventReviews →', fetchedReviews);
 
     // const currentParticipants = await DataService.getEventParticipants(created.id);
     // console.log('getEventParticipants →', currentParticipants);
