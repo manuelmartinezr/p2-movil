@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  StatusBar,
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useData } from '../providers/DataProvider';
@@ -83,11 +83,11 @@ export default function EventsScreen() {
       name: eventName,
       image: imageUrl,
       maxParticipants: parsedCapacity,
-      trackId: selectedTrackId,
+      eventTrackId: selectedTrackId,
     };
 
     if (editingId) {
-      await updateEvent(editingId, { id: editingId, ...eventData });
+      await updateEvent(editingId, { ...eventData, id: editingId });
       Alert.alert('Event updated!');
     } else {
       await addEvent(eventData);
@@ -101,7 +101,7 @@ export default function EventsScreen() {
     setEventName(event.name);
     setImageUrl(event.image || '');
     setMaxParticipants(event.maxParticipants?.toString() || '');
-    setSelectedTrackId(event.trackId ?? null);
+    setSelectedTrackId(event.eventTrackId ?? null);
     setEditingId(event.id);
   };
 
@@ -207,9 +207,9 @@ export default function EventsScreen() {
               {currentParticipantsMap[item.id] ?? 0} /{' '}
               {item.maxParticipants || 'N/A'} participants
             </Text>
-            {item.trackId && (
+            {item.eventTrackId && (
               <Text style={styles.trackInfo}>
-                Track: {tracks.find((t) => t.id === item.trackId)?.name || 'Unknown'}
+                Track: {tracks.find((t) => t.id === item.eventTrackId)?.name || 'Unknown'}
               </Text>
             )}
             <View style={styles.actions}>
