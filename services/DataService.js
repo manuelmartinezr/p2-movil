@@ -1,7 +1,7 @@
 // habla con el API del webservice para obtener los datos
-
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'estejvni-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'quebienmesiento-4bb8-a532-6aaa5fddefa4';
+import { getLocalVersion } from '../utils/localstorage.js';
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -175,19 +175,37 @@ export const DataService = {
       console.log(`Event with ID ${eventId} deleted successfully`);
       return { success: true };
     },
-  async deleteEventTrack(trackId) {
-    const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/delete/${trackId}`;
-    const res = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to delete event track with ID ${trackId}`);
+    async deleteEventTrack(trackId) {
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/event_tracks/delete/${trackId}`;
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to delete event track with ID ${trackId}`);
+      }
+      console.log(`Track with ID ${trackId} deleted successfully`);
+      console.log('response', res.body); 
+      return { success: true };
+    },
+    async bumpApiVersion() {
+      const current = (await getLocalVersion())|| 0;
+      const url = `${BASE_URL}/${CONTRACT_KEY}/data/store`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          table_name: 'version',
+          data: { version: current + 1 },
+          where: { version: current }
+        }),
+      });
+      const json = await handleResponse(res);
+      console.log('DataService.bumpApiversion', json);
+      return json;
     }
-    console.log(`Track with ID ${trackId} deleted successfully`);
-    console.log('response', res.body); 
-    return { success: true };
-  }
 }

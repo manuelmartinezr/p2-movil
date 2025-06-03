@@ -3,6 +3,7 @@
 // hace wrap a los componentes que consuman el contexto
 import { createContext, useContext, useEffect, useState } from 'react';
 import { DataService } from '../services/DataService';
+import { getLocalVersion, setLocalVersion } from '../utils/localstorage';
 
 export const DataContext = createContext({
   events: [],//todos los eventos
@@ -66,6 +67,7 @@ export const DataProvider = ({ children }) => {
       const newEvent = await DataService.addEvent(event);
       console.log('New event added:', newEvent);
       setEvents((prevEvents) => [...prevEvents, newEvent]);
+      await bumpApiVersion(); // Incrementa la versión de la API después de agregar un evento
     } catch (error) {
       console.error('Error adding event:', error);
     }
@@ -83,6 +85,7 @@ export const DataProvider = ({ children }) => {
       setEvents((prevEvents) =>
         prevEvents.map((event) => (event.id === eventId ? updatedEvent : event))
       );
+      await bumpApiVersion(); // Incrementa la versión de la API después de actualizar un evento
     } catch (error) {
       console.error('Error updating event:', error);
     }
@@ -93,6 +96,7 @@ export const DataProvider = ({ children }) => {
       const response = await DataService.deleteEvent(eventId);
       if (response.success) {
         setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
+        await bumpApiVersion(); // Incrementa la versión de la API después de eliminar un evento
         return true;
       }
       return false;
@@ -127,6 +131,7 @@ export const DataProvider = ({ children }) => {
       const newTrack = await DataService.addEventTrack(track);
        console.log('New track added:', newTrack);
       setTracks((prev) => [...prev, newTrack]);
+      await bumpApiVersion(); // Incrementa la versión de la API después de agregar una pista
     } catch (error) {
       console.error('Error adding event track:', error);
     }
@@ -138,6 +143,7 @@ export const DataProvider = ({ children }) => {
       setTracks((prev) =>
         prev.map((track) => (track.id === trackId ? updated : track))
       );
+      await bumpApiVersion(); // Incrementa la versión de la API después de actualizar una pista
     } catch (error) {
       console.error('Error updating event track:', error);
     }
@@ -150,6 +156,7 @@ export const DataProvider = ({ children }) => {
         setTracks((prev) => prev.filter((track) => track.id !== trackId));
         return true;
       }
+      await bumpApiVersion(); // Incrementa la versión de la API después de eliminar una pista
       return false;
     } catch (error) {
       console.error('Error deleting event track:', error);
@@ -206,6 +213,18 @@ export const DataProvider = ({ children }) => {
       return 0;
     }
   }
+  const bumpApiVersion = async () => {
+    // Lógica para incrementar la versión de la API
+    try {
+      const version = await DataService.bumpApiVersion();
+      console.log('API version bumped:', version);
+      await setLocalVersion(await getLocalVersion() + 1); // Incrementa la versión local
+      return version;
+    } catch (error) {
+      console.error('Error bumping API version:', error);
+      return null;
+    }
+  };
 
   return (
     <DataContext.Provider
