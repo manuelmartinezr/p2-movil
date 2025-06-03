@@ -1,18 +1,18 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
-  KeyboardAvoidingView,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useData } from '../providers/DataProvider';
 
@@ -30,6 +30,7 @@ export default function EventsScreen() {
 
   const [eventName, setEventName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [location, setLocation] = useState('');
   const [maxParticipants, setMaxParticipants] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [currentParticipantsMap, setCurrentParticipantsMap] = useState({});
@@ -40,6 +41,8 @@ export default function EventsScreen() {
 
   const [startDate, setStartDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startTime, setStartTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -73,6 +76,12 @@ export default function EventsScreen() {
     if (events.length > 0) loadCapacities();
   }, [events]);
 
+  const formatDateTime = (date, time) => {
+    const d = date.toISOString().split('T')[0];
+    const t = time.toTimeString().split(' ')[0].slice(0, 5);
+    return `${d} ${t}`;
+  };
+
   const handleSubmit = async () => {
     if (!eventName.trim() || !maxParticipants.trim()) {
       Alert.alert('Please fill all required fields');
@@ -85,14 +94,13 @@ export default function EventsScreen() {
       return;
     }
 
-    const date = `${startDate.toISOString().split('T')[0]} ${startDate.toTimeString().slice(0, 5)}`;
-
     const eventData = {
       name: eventName,
       image: imageUrl,
+      location,
       maxParticipants: parsedCapacity,
       eventTrackId: selectedTrackId,
-      date,
+      date: formatDateTime(startDate, startTime),
     };
 
     if (editingId) {
@@ -109,9 +117,14 @@ export default function EventsScreen() {
   const handleEdit = (event) => {
     setEventName(event.name);
     setImageUrl(event.image || '');
+    setLocation(event.location || '');
     setMaxParticipants(event.maxParticipants?.toString() || '');
     setSelectedTrackId(event.eventTrackId ?? null);
-    setStartDate(new Date(event.date));
+
+    const [dateStr, timeStr] = (event.startDateTime || '').split(' ');
+    if (dateStr) setStartDate(new Date(dateStr));
+    if (timeStr) setStartTime(new Date(`1970-01-01T${timeStr}:00`));
+
     setEditingId(event.id);
   };
 
@@ -131,25 +144,29 @@ export default function EventsScreen() {
   const resetForm = () => {
     setEventName('');
     setImageUrl('');
+    setLocation('');
     setMaxParticipants('');
     setSelectedTrackId(null);
     setEditingId(null);
     setStartDate(new Date());
+    setStartTime(new Date());
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
       <Text style={styles.title}>{editingId ? 'Edit Event' : 'Create New Event'}</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Name"
+        placeholder="Event Name"
         placeholderTextColor="#aaa"
         value={eventName}
         onChangeText={setEventName}
       />
-
       <TextInput
         style={styles.input}
         placeholder="Image URL"
@@ -157,7 +174,13 @@ export default function EventsScreen() {
         value={imageUrl}
         onChangeText={setImageUrl}
       />
-
+      <TextInput
+        style={styles.input}
+        placeholder="Location"
+        placeholderTextColor="#aaa"
+        value={location}
+        onChangeText={setLocation}
+      />
       <TextInput
         style={styles.input}
         placeholder="Max Participants"
@@ -167,20 +190,34 @@ export default function EventsScreen() {
         keyboardType="numeric"
       />
 
-      <Text style={styles.label}>Event Date & Time</Text>
+      <Text style={styles.label}>Event Date</Text>
       <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-        <Text style={{ color: '#fff' }}>
-          {`${startDate.toISOString().split('T')[0]} ${startDate.toTimeString().slice(0, 5)}`}
-        </Text>
+        <Text style={{ color: '#fff' }}>{startDate.toISOString().split('T')[0]}</Text>
       </TouchableOpacity>
       {showDatePicker && (
         <DateTimePicker
           value={startDate}
-          mode="datetime"
+          mode="date"
           display="default"
-          onChange={(_, selectedDate) => {
+          onChange={(_, date) => {
             setShowDatePicker(false);
-            if (selectedDate) setStartDate(selectedDate);
+            if (date) setStartDate(date);
+          }}
+        />
+      )}
+
+      <Text style={styles.label}>Event Time</Text>
+      <TouchableOpacity style={styles.input} onPress={() => setShowTimePicker(true)}>
+        <Text style={{ color: '#fff' }}>{startTime.toTimeString().slice(0, 5)}</Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={startTime}
+          mode="time"
+          display="default"
+          onChange={(_, time) => {
+            setShowTimePicker(false);
+            if (time) setStartTime(time);
           }}
         />
       )}
@@ -194,10 +231,10 @@ export default function EventsScreen() {
         setValue={setSelectedTrackId}
         setItems={setTrackItems}
         placeholder="Choose a track"
-        style={styles.dropdown}
+        style={[styles.dropdown, { color: 'white' }]}
         dropDownContainerStyle={styles.dropdownContainer}
-        textStyle={styles.dropdownText}
-        listItemLabelStyle={{ color: '#fff' }}
+        textStyle={{ color: 'white' }}
+        listItemLabelStyle={{ color: 'white' }}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
@@ -214,10 +251,10 @@ export default function EventsScreen() {
       )}
 
       <Text style={styles.subtitle}>All Events</Text>
-
       <FlatList
         data={events}
         keyExtractor={(item, index) => item?.id?.toString() ?? `event-${index}`}
+        contentContainerStyle={{ paddingBottom: 150 }}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => router.push({ pathname: '/event-detail', params: item })}
@@ -227,7 +264,7 @@ export default function EventsScreen() {
             <Text style={styles.cardSubtext}>
               {currentParticipantsMap[item.id] ?? 0} / {item.maxParticipants || 'N/A'} participants
             </Text>
-            <Text style={styles.cardSubtext}>Date: {item.date}</Text>
+            <Text style={styles.cardSubtext}>When: {item.startDateTime}</Text>
             {item.eventTrackId && (
               <Text style={styles.trackInfo}>
                 Track: {tracks.find((t) => t.id === item.eventTrackId)?.name || 'Unknown'}
@@ -286,10 +323,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E2A47',
     borderColor: '#3D5AFE',
     zIndex: 999,
-  },
-  dropdownText: {
-    color: '#FFFFFF',
-    fontSize: 16,
   },
   button: {
     backgroundColor: '#3D5AFE',
