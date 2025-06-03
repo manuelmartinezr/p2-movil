@@ -3,13 +3,16 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useData } from '../providers/DataProvider';
 
@@ -35,6 +38,14 @@ export default function EventsScreen() {
   const [selectedTrackId, setSelectedTrackId] = useState(null);
   const [trackItems, setTrackItems] = useState([]);
 
+  const [startDate, setStartDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -44,16 +55,16 @@ export default function EventsScreen() {
     await getEventTracks();
   };
 
- useEffect(() => {
-  setTrackItems(
-    tracks
-      .filter((track) => track?.id && track?.name) // ✅ Evita tracks sin id o nombre
-      .map((track) => ({
-        label: track.name,
-        value: track.id,
-      }))
-  );
-}, [tracks]);
+  useEffect(() => {
+    setTrackItems(
+      tracks
+        .filter((track) => track?.id && track?.name)
+        .map((track) => ({
+          label: track.name,
+          value: track.id,
+        }))
+    );
+  }, [tracks]);
 
   useEffect(() => {
     const loadCapacities = async () => {
@@ -84,6 +95,9 @@ export default function EventsScreen() {
       image: imageUrl,
       maxParticipants: parsedCapacity,
       eventTrackId: selectedTrackId,
+      date: startDate.toISOString().split('T')[0], // yyyy-MM-dd
+      timeStart: startTime.toTimeString().split(' ')[0], // hh:mm:ss
+      timeEnd: endTime.toTimeString().split(' ')[0],
     };
 
     if (editingId) {
@@ -102,6 +116,9 @@ export default function EventsScreen() {
     setImageUrl(event.image || '');
     setMaxParticipants(event.maxParticipants?.toString() || '');
     setSelectedTrackId(event.eventTrackId ?? null);
+    setStartDate(new Date(event.date));
+    setStartTime(new Date(`1970-01-01T${event.timeStart || '00:00:00'}`));
+    setEndTime(new Date(`1970-01-01T${event.timeEnd || '00:00:00'}`));
     setEditingId(event.id);
   };
 
@@ -124,39 +141,52 @@ export default function EventsScreen() {
     setMaxParticipants('');
     setSelectedTrackId(null);
     setEditingId(null);
+    setStartDate(new Date());
+    setStartTime(new Date());
+    setEndTime(new Date());
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
       <StatusBar barStyle="light-content" backgroundColor="#0A1128" />
-      <Text style={styles.title}>
-        {editingId ? 'Edit Event' : 'Create New Event'}
-      </Text>
+      <Text style={styles.title}>{editingId ? 'Edit Event' : 'Create New Event'}</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        placeholderTextColor="#aaa"
-        value={eventName}
-        onChangeText={setEventName}
-      />
+      <TextInput style={styles.input} placeholder="Name" placeholderTextColor="#aaa" value={eventName} onChangeText={setEventName} />
+      <TextInput style={styles.input} placeholder="Image URL" placeholderTextColor="#aaa" value={imageUrl} onChangeText={setImageUrl} />
+      <TextInput style={styles.input} placeholder="Max Participants" placeholderTextColor="#aaa" value={maxParticipants} onChangeText={setMaxParticipants} keyboardType="numeric" />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Image URL"
-        placeholderTextColor="#aaa"
-        value={imageUrl}
-        onChangeText={setImageUrl}
-      />
+      <Text style={styles.label}>Event Date</Text>
+      <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+        <Text style={{ color: '#fff' }}>{startDate.toISOString().split('T')[0]}</Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker value={startDate} mode="date" display="default" onChange={(_, date) => {
+          setShowDatePicker(false);
+          if (date) setStartDate(date);
+        }} />
+      )}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Max Participants"
-        placeholderTextColor="#aaa"
-        value={maxParticipants}
-        onChangeText={setMaxParticipants}
-        keyboardType="numeric"
-      />
+      <Text style={styles.label}>Start Time</Text>
+      <TouchableOpacity style={styles.input} onPress={() => setShowStartTimePicker(true)}>
+        <Text style={{ color: '#fff' }}>{startTime.toTimeString().split(' ')[0]}</Text>
+      </TouchableOpacity>
+      {showStartTimePicker && (
+        <DateTimePicker value={startTime} mode="time" display="default" onChange={(_, time) => {
+          setShowStartTimePicker(false);
+          if (time) setStartTime(time);
+        }} />
+      )}
+
+      <Text style={styles.label}>End Time</Text>
+      <TouchableOpacity style={styles.input} onPress={() => setShowEndTimePicker(true)}>
+        <Text style={{ color: '#fff' }}>{endTime.toTimeString().split(' ')[0]}</Text>
+      </TouchableOpacity>
+      {showEndTimePicker && (
+        <DateTimePicker value={endTime} mode="time" display="default" onChange={(_, time) => {
+          setShowEndTimePicker(false);
+          if (time) setEndTime(time);
+        }} />
+      )}
 
       <Text style={styles.label}>Select Track</Text>
       <DropDownPicker
@@ -174,65 +204,52 @@ export default function EventsScreen() {
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>
-          {editingId ? 'Update Event' : 'Add Event'}
-        </Text>
+        <Text style={styles.buttonText}>{editingId ? 'Update Event' : 'Add Event'}</Text>
       </TouchableOpacity>
 
       {editingId && (
-        <TouchableOpacity
-          style={[styles.button, styles.cancelButton]}
-          onPress={resetForm}
-        >
+        <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={resetForm}>
           <Text style={styles.buttonText}>Cancel</Text>
         </TouchableOpacity>
       )}
 
       <Text style={styles.subtitle}>All Events</Text>
 
-      <FlatList
-        data={events}
-        keyExtractor={(item, index) =>
-          item?.id ? item.id.toString() : `event-${index}`
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() =>
-              router.push({ pathname: '/event-detail', params: item })
-            }
-            style={styles.card}
-          >
-            <Text style={styles.cardText}>{item.name}</Text>
-            <Text style={styles.cardSubtext}>
-              {currentParticipantsMap[item.id] ?? 0} /{' '}
-              {item.maxParticipants || 'N/A'} participants
+      {events.map((item) => (
+        <View key={item.id} style={styles.card}>
+          <Text style={styles.cardText}>{item.name}</Text>
+          <Text style={styles.cardSubtext}>
+            {currentParticipantsMap[item.id] ?? 0} / {item.maxParticipants || 'N/A'} participants
+          </Text>
+          <Text style={styles.cardSubtext}>Date: {item.date}</Text>
+          <Text style={styles.cardSubtext}>Time: {item.timeStart} - {item.timeEnd}</Text>
+          {item.eventTrackId && (
+            <Text style={styles.trackInfo}>
+              Track: {tracks.find((t) => t.id === item.eventTrackId)?.name || 'Unknown'}
             </Text>
-            {item.eventTrackId && (
-              <Text style={styles.trackInfo}>
-                Track: {tracks.find((t) => t.id === item.eventTrackId)?.name || 'Unknown'}
-              </Text>
-            )}
-            <View style={styles.actions}>
-              <TouchableOpacity onPress={() => handleEdit(item)}>
-                <Text style={styles.edit}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                <Text style={styles.delete}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+          )}
+          <View style={styles.actions}>
+            <TouchableOpacity onPress={() => handleEdit(item)}>
+              <Text style={styles.edit}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDelete(item.id)}>
+              <Text style={styles.delete}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContainer: {
     flex: 1,
     backgroundColor: '#0A1128',
+  },
+  scrollContent: {
     padding: 20,
-    zIndex: 10, // importante para DropDownPicker
+    paddingBottom: 50,
   },
   title: {
     fontSize: 24,
@@ -290,6 +307,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: 12,
+    marginTop: 16,
   },
   card: {
     backgroundColor: '#1E2A47',
@@ -299,11 +317,13 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   cardSubtext: {
     color: '#B0BEC5',
+    fontSize: 14,
     marginBottom: 4,
   },
   trackInfo: {
