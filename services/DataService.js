@@ -1,6 +1,6 @@
 // habla con el API del webservice para obtener los datos
 const BASE_URL = 'https://unidb.openlab.uninorte.edu.co';
-const CONTRACT_KEY = 'probandoparademo-4bb8-a532-6aaa5fddefa4';
+const CONTRACT_KEY = 'mevoyamorir-4bb8-a532-6aaa5fddefa499';
 import { getLocalVersion } from '../utils/localstorage.js';
 
 async function handleResponse(res) {

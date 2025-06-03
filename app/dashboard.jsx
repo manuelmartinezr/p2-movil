@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useData } from '../providers/DataProvider';
 
@@ -59,31 +59,10 @@ export default function DashboardScreen() {
   // Constantes de paginación
   
   const [loading, setLoading] = useState(true);
-  const [participantsData, setParticipantsData] = useState({});
-  const [maxCapacityData, setMaxCapacityData] = useState({});
   const [currentReviews, setCurrentReviews] = useState([]);
 
   
   const REVIEWS_PER_PAGE = 2;
-
-  useEffect(() => {
-    const loadEventMetrics = async () => {
-      const participants = {};
-      const maxCapacities = {};
-
-      await Promise.all(events.map(async (event) => {
-        participants[event.id] = await getEventParticipants(event.id);
-        maxCapacities[event.id] = await getEventMaxParticipants(event.id);
-      }));
-
-      setParticipantsData(participants);
-      setMaxCapacityData(maxCapacities);
-      setLoading(false);
-    };
-
-    loadEventMetrics();
-  }, [events]);
-
   // Funciones toggle
   const toggleEvents = () => setIsEventsExpanded(!isEventsExpanded);
   const toggleFeedback = () => {
@@ -146,8 +125,8 @@ export default function DashboardScreen() {
             
             {/* Filas de datos */}
             {events.map((event) => {
-              const current = participantsData[event.id] || 0;
-              const max = maxCapacityData[event.id] || 1;
+              const current = event.currentParticipants || 0;
+              const max = event.maxParticipants || 1;
               const occupancyPercentage = (current / max) * 100;
               const occupancyColor = occupancyPercentage >= 90 ? '#FF6B6B' : 
                                   occupancyPercentage >= 75 ? '#FFD166' : '#06D6A0';
